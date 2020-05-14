@@ -1,0 +1,73 @@
+    AWSTemplateFormatVersion: 2010-09-09
+    Parameters:
+      AZone:
+        Description: Select the availabilty zone for subnet
+        Type: AWS::EC2::AvailabilityZone::Name
+      MyVpc1:
+        Type: String
+      MySubnet1:
+        Type: String
+
+	Resources:
+	  Vpc:
+		Type: AWS::EC2::VPC
+		Properties:
+		  CidrBlock: 10.0.0.0/16
+		  EnableDnsSuppor: True
+		  EnableDnsHostnames: True
+		  Tag:
+		  - Key: Name
+			Value: Stage
+	  MyInternetGateway:
+		Type: AWS::EC2::InternetGateway
+		Properties:
+		  Tag:
+		  - Key: Name
+			Value: Stage
+	  GatewayToInternet
+		Type: AWS::EC2::VPCGatewayAttachment
+		Properties:
+		  VpcId: !Ref Vpc
+		  InternetGatewayId:!Ref MyInternetGateway
+	  MySubnet:
+		Type: AWS::EC2::Subnet
+		Properties:
+		  VpcId: !Ref Vpc
+		  CidrBlock: 10.1.0.0/24
+		  AvailabilityZone: ap-southeast-1
+		  MapPublicIpOnLaunch: True
+	  MyRouteTable:
+		Type: AWS::EC2::RouteTable
+		Properties
+		  VpcId: !Ref Vpc
+	  MyPublicRouteTable:
+		Type: AWS::EC2::Route
+		DependsOn: GatewayToInternet
+		Properties
+		  RouteTableId: !Ref MyRouteTable
+		  DestinationCidrBlock: 0.0.0.0/0
+		  GatewayId: !Ref MyInternetGateway
+	  MyPublicRouteTableAssociation:
+		Type: AWS::EC2::SubnetRouteTableAssociation
+		Properties:
+		  SubnetId: !Ref Subnet
+		  RouteTableId: !Ref MyPublicRouteTable
+	  MySecurityGroup:
+		Type: AWS::EC2::SecurityGroup
+		Properties
+		  VpcId: !Ref Vpc
+		  SecurityGroupIngress
+		  - IpProtocoltcp: tcp
+			FromPort: 22
+			ToPort: 22
+			CidrIp: 0.0.0.0/0
+	  MyInstance:
+		Type: AWS::EC2::Instance
+		Properties:
+		  SubnetId: MySubnet
+		  KeyName: Master-01
+		  InstanceType: t2.micro
+		  SecurityGroupIds: MySecurityGroup
+		  ImageId: 
+  
+   
